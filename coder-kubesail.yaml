@@ -5,7 +5,7 @@ metadata:
   labels:
     app: coder
   annotations:
-    kubesail.com/template: matifali/coder:v51
+    kubesail.com/template: matifali/coder:v58
     kubesailEditorUid: 908d11c6-a488-4b3e-b76f-13e4512b8509
 spec:
   replicas: 1
@@ -26,9 +26,12 @@ spec:
           ports:
             - name: http
               containerPort: 3000
+              protocol: TCP
           env:
             - name: CODER_ACCESS_URL
               value: https://coder.{{ CLUSTER_ADDRESS }}
+            - name: CODER_HTTP_ADDRESS
+              value: "0.0.0.0:3000"
           resources: {}
           volumeMounts:
             - name: coder-data
@@ -48,7 +51,7 @@ metadata:
     kubesailEditorUid: 9ca37c5a-586c-4004-a836-f013b9358bfc
     cert-manager.io/cluster-issuer: letsencrypt
     kubernetes.io/tls-acme: "true"
-    kubesail.com/template: matifali/coder:v51
+    kubesail.com/template: matifali/coder:v58
     nginx.ingress.kubernetes.io/proxy-body-size: 500m
 spec:
   tls:
@@ -84,13 +87,13 @@ metadata:
     app: coder
   annotations:
     kubesailEditorUid: d2ad21aa-de51-40e0-abac-299f8f603641
-    kubesail.com/template: matifali/coder:v51
+    kubesail.com/template: matifali/coder:v58
 spec:
   ports:
     - name: http
-      protocol: TCP
-      port: 3000
+      port: 80
       targetPort: http
+      protocol: TCP
   selector:
     app: coder
 ---
@@ -100,7 +103,7 @@ metadata:
   name: coder-data
   annotations:
     kubesailEditorUid: 02205648-1737-4c2c-a663-8ea51ab1b028
-    kubesail.com/template: matifali/coder:v51
+    kubesail.com/template: matifali/coder:v58
 spec:
   accessModes:
     - ReadWriteOnce
