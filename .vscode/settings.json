@@ -1,0 +1,5 @@
+{
+  "yaml.schemas": {
+    "kubernetes://schema/apps/v1@deployment+v1@service+v1@persistentvolumeclaim": "file:///c%3A/Users/matif/github/coder-kubesail/coder-kubesail.yaml"
+  }
+}
