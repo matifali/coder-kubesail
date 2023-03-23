@@ -5,7 +5,7 @@ metadata:
   labels:
     app: coder
   annotations:
-    kubesail.com/template: matifali/coder:v86
+    kubesail.com/template: matifali/coder:v94
     kubesailEditorUid: 908d11c6-a488-4b3e-b76f-13e4512b8509
 spec:
   replicas: 1
@@ -36,7 +36,7 @@ spec:
             - name: CODER_VERBOSE
               value: "true"
             - name: CODER_TELEMETRY_INSTALL_SOURCE
-              value: "kubesail"
+              value: kubesail
           resources: {}
           volumeMounts:
             - name: coder-data
@@ -52,15 +52,15 @@ metadata:
   name: coder
   annotations:
     kubesailEditorUid: 02205648-1737-4c2c-a663-8ea51ab1b028
-    kubesail.com/template: matifali/coder:v86
+    kubesail.com/template: matifali/coder:v94
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: coder
+  name: coder-workspace-perms
   annotations:
     kubesailEditorUid: 02205648-1737-4c2c-a663-8ea51ab1b028
-    kubesail.com/template: matifali/coder:v86
+    kubesail.com/template: matifali/coder:v94
 rules:
   - apiGroups:
       - ""
@@ -81,14 +81,14 @@ metadata:
   name: coder
   annotations:
     kubesailEditorUid: 02205648-1737-4c2c-a663-8ea51ab1b028
-    kubesail.com/template: matifali/coder:v86
+    kubesail.com/template: matifali/coder:v94
 subjects:
   - kind: ServiceAccount
     name: coder
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: coder
+  name: coder-workspace-perms
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -100,29 +100,19 @@ metadata:
     kubesailEditorUid: 9ca37c5a-586c-4004-a836-f013b9358bfc
     cert-manager.io/cluster-issuer: letsencrypt
     kubernetes.io/tls-acme: "true"
-    kubesail.com/template: matifali/coder:v86
+    kubesail.com/template: matifali/coder:v94
     nginx.ingress.kubernetes.io/proxy-body-size: 500m
     nginx.org/websocket-services: coder
 spec:
   tls:
     - hosts:
         - coder.{{ CLUSTER_ADDRESS }}
-    - hosts:
-        - coder.{{ LOCAL_CLUSTER_ADDRESS }}
   rules:
     - host: coder.{{ CLUSTER_ADDRESS }}
       http:
         paths:
-          - pathType: ImplementationSpecific
-            backend:
-              service:
-                name: coder
-                port:
-                  name: http
-    - host: coder.{{ LOCAL_CLUSTER_ADDRESS }}
-      http:
-        paths:
-          - pathType: ImplementationSpecific
+          - path: /
+            pathType: Prefix
             backend:
               service:
                 name: coder
@@ -135,7 +125,7 @@ metadata:
   name: coder-data
   annotations:
     kubesailEditorUid: 02205648-1737-4c2c-a663-8ea51ab1b028
-    kubesail.com/template: matifali/coder:v86
+    kubesail.com/template: matifali/coder:v94
 spec:
   accessModes:
     - ReadWriteOnce
@@ -151,7 +141,7 @@ metadata:
     app: coder
   annotations:
     kubesailEditorUid: d2ad21aa-de51-40e0-abac-299f8f603641
-    kubesail.com/template: matifali/coder:v86
+    kubesail.com/template: matifali/coder:v94
 spec:
   ports:
     - name: http
@@ -160,3 +150,6 @@ spec:
       protocol: TCP
   selector:
     app: coder
+  type: LoadBalancer
+  sessionAffinity: ClientIP
+  externalTrafficPolicy: Cluster
