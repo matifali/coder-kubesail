@@ -5,7 +5,7 @@ metadata:
   labels:
     app: coder
   annotations:
-    kubesail.com/template: matifali/coder:v72
+    kubesail.com/template: matifali/coder:v86
     kubesailEditorUid: 908d11c6-a488-4b3e-b76f-13e4512b8509
 spec:
   replicas: 1
@@ -33,6 +33,10 @@ spec:
               value: https://coder.{{ CLUSTER_ADDRESS }}
             - name: CODER_HTTP_ADDRESS
               value: 0.0.0.0:3000
+            - name: CODER_VERBOSE
+              value: "true"
+            - name: CODER_TELEMETRY_INSTALL_SOURCE
+              value: "kubesail"
           resources: {}
           volumeMounts:
             - name: coder-data
@@ -42,20 +46,13 @@ spec:
           persistentVolumeClaim:
             claimName: coder-data
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+apiVersion: v1
+kind: ServiceAccount
 metadata:
   name: coder
   annotations:
     kubesailEditorUid: 02205648-1737-4c2c-a663-8ea51ab1b028
-    kubesail.com/template: matifali/coder:v72
-subjects:
-  - kind: ServiceAccount
-    name: coder
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: coder
+    kubesail.com/template: matifali/coder:v86
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -63,7 +60,7 @@ metadata:
   name: coder
   annotations:
     kubesailEditorUid: 02205648-1737-4c2c-a663-8ea51ab1b028
-    kubesail.com/template: matifali/coder:v72
+    kubesail.com/template: matifali/coder:v86
 rules:
   - apiGroups:
       - ""
@@ -78,13 +75,20 @@ rules:
     verbs:
       - "*"
 ---
-apiVersion: v1
-kind: ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
 metadata:
   name: coder
   annotations:
     kubesailEditorUid: 02205648-1737-4c2c-a663-8ea51ab1b028
-    kubesail.com/template: matifali/coder:v72
+    kubesail.com/template: matifali/coder:v86
+subjects:
+  - kind: ServiceAccount
+    name: coder
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: coder
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -96,8 +100,9 @@ metadata:
     kubesailEditorUid: 9ca37c5a-586c-4004-a836-f013b9358bfc
     cert-manager.io/cluster-issuer: letsencrypt
     kubernetes.io/tls-acme: "true"
-    kubesail.com/template: matifali/coder:v72
+    kubesail.com/template: matifali/coder:v86
     nginx.ingress.kubernetes.io/proxy-body-size: 500m
+    nginx.org/websocket-services: coder
 spec:
   tls:
     - hosts:
@@ -130,7 +135,7 @@ metadata:
   name: coder-data
   annotations:
     kubesailEditorUid: 02205648-1737-4c2c-a663-8ea51ab1b028
-    kubesail.com/template: matifali/coder:v72
+    kubesail.com/template: matifali/coder:v86
 spec:
   accessModes:
     - ReadWriteOnce
@@ -146,7 +151,7 @@ metadata:
     app: coder
   annotations:
     kubesailEditorUid: d2ad21aa-de51-40e0-abac-299f8f603641
-    kubesail.com/template: matifali/coder:v72
+    kubesail.com/template: matifali/coder:v86
 spec:
   ports:
     - name: http
